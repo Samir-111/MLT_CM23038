@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hello TensorFlow.js</title>
+
+  <!-- TensorFlow.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0"></script>
+</head>
+<body>
+
+<h2>TensorFlow.js Verification</h2>
+<pre id="output"></pre>
+
+<script>
+  // Check if TensorFlow.js is loaded
+  console.log("TensorFlow.js Version:", tf.version.tfjs);
+
+  // Create tensors
+  const tensorA = tf.tensor([1, 2, 3]);
+  const tensorB = tf.tensor([4, 5, 6]);
+
+  // Perform addition
+  const tensorSum = tensorA.add(tensorB);
+
+  // Print to console
+  console.log("Tensor A:");
+  tensorA.print();
+
+  console.log("Tensor B:");
+  tensorB.print();
+
+  console.log("Sum of Tensor A and B:");
+  tensorSum.print();
+
+  // Display output on webpage
+  document.getElementById("output").innerText =
+    "Tensor A: [1, 2, 3]\n" +
+    "Tensor B: [4, 5, 6]\n" +
+    "Sum:      [5, 7, 9]";
+</script>
+
+</body>
+</html>
