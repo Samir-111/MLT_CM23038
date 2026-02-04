@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tensor Creation using TensorFlow.js</title>
+    <!-- TensorFlow.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+</head>
+<body>
+
+<h2>Check Console for Tensor Output</h2>
+<p>Right-click → Inspect → Console</p>
+
+<script>
+    // 1️⃣ Scalar (0-D Tensor)
+    const scalar = tf.scalar(10);
+    console.log("Scalar (0-D Tensor):");
+    scalar.print();
+    console.log("Shape:", scalar.shape);
+
+    // 2️⃣ Vector (1-D Tensor)
+    const vector = tf.tensor1d([1, 2, 3, 4, 5]);
+    console.log("\nVector (1-D Tensor):");
+    vector.print();
+    console.log("Shape:", vector.shape);
+
+    // 3️⃣ Matrix (2-D Tensor)
+    const matrix = tf.tensor2d(
+        [
+            [1, 2, 3],
+            [4, 5, 6]
+        ]
+    );
+    console.log("\nMatrix (2-D Tensor):");
+    matrix.print();
+    console.log("Shape:", matrix.shape);
+</script>
+
+</body>
+</html>
