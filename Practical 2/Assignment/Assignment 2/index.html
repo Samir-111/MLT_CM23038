@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Draw Digit & Predict</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0"></script>
+
+  <style>
+    canvas {
+      border: 2px solid black;
+      background: white;
+      cursor: crosshair;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>Draw a Digit (0–9)</h2>
+
+<canvas id="canvas" width="280" height="280"></canvas>
+<br><br>
+
+<button onclick="clearCanvas()">Clear</button>
+<button onclick="predictDigit()">Predict</button>
+
+<h3 id="result"></h3>
+
+<script src="script.js"></script>
+
+</body>
+</html>
