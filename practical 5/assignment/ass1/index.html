@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Webcam Classification</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.20.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0"></script>
+
+<style>
+body{font-family:Arial;text-align:center;background:#f4f4f4}
+video{border-radius:10px}
+</style>
+
+</head>
+
+<body>
+
+<h2>Webcam Object Classification</h2>
+
+<p id="status">Loading Model...</p>
+
+<video id="webcam" width="450" height="320" autoplay></video>
+
+<h3 id="prediction">Prediction: -</h3>
+
+<script>
+
+let model;
+let webcam=document.getElementById("webcam");
+
+async function setupCamera(){
+
+const stream = await navigator.mediaDevices.getUserMedia({video:true});
+webcam.srcObject=stream;
+
+return new Promise(resolve=>{
+webcam.onloadedmetadata=()=>resolve(webcam);
+});
+
+}
+
+async function loadModel(){
+
+model=await mobilenet.load();
+document.getElementById("status").innerHTML="Model Loaded";
+
+}
+
+async function predict(){
+
+const pred=await model.classify(webcam);
+
+document.getElementById("prediction").innerHTML=
+"Prediction: "+pred[0].className;
+
+requestAnimationFrame(predict);
+
+}
+
+async function main(){
+
+await setupCamera();
+await loadModel();
+predict();
+
+}
+
+main();
+
+</script>
+
+</body>
+</html>

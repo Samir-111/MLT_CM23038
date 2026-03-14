@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>FPS Measurement</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.20.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0"></script>
+
+<style>
+
+body{
+font-family:Arial;
+text-align:center;
+background:#f4f4f4;
+}
+
+video{
+border-radius:10px;
+}
+
+#fps{
+color:green;
+font-size:20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Real-Time Detection Performance</h2>
+
+<p id="status">Loading Model...</p>
+
+<video id="webcam" width="450" height="320" autoplay></video>
+
+<h3 id="label">Object: -</h3>
+
+<h3 id="fps">FPS: -</h3>
+
+<script>
+
+let model;
+let webcam=document.getElementById("webcam");
+
+let lastTime=performance.now();
+
+async function setupCamera(){
+
+const stream=await navigator.mediaDevices.getUserMedia({video:true});
+webcam.srcObject=stream;
+
+return new Promise(resolve=>{
+webcam.onloadedmetadata=()=>resolve(webcam);
+});
+
+}
+
+async function loadModel(){
+
+model=await mobilenet.load();
+document.getElementById("status").innerHTML="Model Loaded";
+
+}
+
+async function detect(){
+
+const pred=await model.classify(webcam);
+
+document.getElementById("label").innerHTML=
+"Object: "+pred[0].className;
+
+let now=performance.now();
+
+let fps=(1000/(now-lastTime)).toFixed(2);
+
+document.getElementById("fps").innerHTML=
+"FPS: "+fps;
+
+lastTime=now;
+
+requestAnimationFrame(detect);
+
+}
+
+async function main(){
+
+await setupCamera();
+await loadModel();
+detect();
+
+}
+
+main();
+
+</script>
+
+</body>
+</html>

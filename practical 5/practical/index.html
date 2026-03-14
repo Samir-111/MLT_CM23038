@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Stable Webcam Detection</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.20.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0"></script>
+
+<style>
+
+body{
+font-family:Arial;
+text-align:center;
+background:#f4f4f4;
+}
+
+.box{
+background:white;
+width:700px;
+margin:auto;
+margin-top:40px;
+padding:20px;
+border-radius:10px;
+box-shadow:0 0 10px gray;
+}
+
+video{
+border-radius:10px;
+}
+
+#label{
+font-size:22px;
+margin-top:15px;
+font-weight:bold;
+}
+
+#fps{
+color:green;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>Webcam Object Detection</h2>
+
+<p id="status">Loading Model...</p>
+
+<video id="webcam" width="500" height="350" autoplay></video>
+
+<p id="label">Object: -</p>
+
+<p id="fps">FPS: -</p>
+
+</div>
+
+<script>
+
+let model;
+let webcam=document.getElementById("webcam");
+
+let history=[];
+
+async function setupCamera(){
+
+const stream = await navigator.mediaDevices.getUserMedia({video:true});
+
+webcam.srcObject=stream;
+
+return new Promise(resolve=>{
+webcam.onloadedmetadata=()=>{
+resolve(webcam);
+}
+});
+
+}
+
+async function loadModel(){
+
+model = await mobilenet.load();
+
+document.getElementById("status").innerHTML="Model Loaded";
+
+}
+
+function smoothPrediction(label){
+
+history.push(label);
+
+if(history.length>5){
+history.shift();
+}
+
+let count={};
+
+history.forEach(l=>{
+count[l]=(count[l]||0)+1;
+});
+
+let best=Object.keys(count).reduce((a,b)=>count[a]>count[b]?a:b);
+
+return best;
+
+}
+
+async function detect(){
+
+let lastTime=performance.now();
+
+async function frame(){
+
+const predictions=await model.classify(webcam);
+
+let stableLabel=smoothPrediction(predictions[0].className);
+
+document.getElementById("label").innerHTML=
+"Object: "+stableLabel;
+
+let now=performance.now();
+let fps=(1000/(now-lastTime)).toFixed(2);
+
+document.getElementById("fps").innerHTML=
+"FPS: "+fps;
+
+lastTime=now;
+
+requestAnimationFrame(frame);
+
+}
+
+frame();
+
+}
+
+async function main(){
+
+await setupCamera();
+await loadModel();
+detect();
+
+}
+
+main();
+
+</script>
+
+</body>
+</html>

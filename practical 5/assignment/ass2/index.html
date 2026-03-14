@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Overlay Detection</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.20.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0"></script>
+
+<style>
+
+body{text-align:center;font-family:Arial;background:#f4f4f4}
+
+.container{
+position:relative;
+display:inline-block;
+}
+
+video{
+border-radius:10px;
+}
+
+#label{
+position:absolute;
+top:10px;
+left:10px;
+background:black;
+color:white;
+padding:8px;
+border-radius:5px;
+font-size:18px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Overlay Object Detection</h2>
+
+<p id="status">Loading Model...</p>
+
+<div class="container">
+
+<video id="webcam" width="450" height="320" autoplay></video>
+
+<div id="label">Object: -</div>
+
+</div>
+
+<script>
+
+let model;
+let webcam=document.getElementById("webcam");
+
+async function setupCamera(){
+
+const stream=await navigator.mediaDevices.getUserMedia({video:true});
+webcam.srcObject=stream;
+
+return new Promise(resolve=>{
+webcam.onloadedmetadata=()=>resolve(webcam);
+});
+
+}
+
+async function loadModel(){
+
+model=await mobilenet.load();
+document.getElementById("status").innerHTML="Model Loaded";
+
+}
+
+async function detect(){
+
+const pred=await model.classify(webcam);
+
+document.getElementById("label").innerHTML=
+pred[0].className;
+
+requestAnimationFrame(detect);
+
+}
+
+async function main(){
+
+await setupCamera();
+await loadModel();
+detect();
+
+}
+
+main();
+
+</script>
+
+</body>
+</html>
