@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Accuracy Test</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+
+</head>
+
+<body style="text-align:center;font-family:Arial">
+
+<h2>Test Classification on 5 Images</h2>
+
+<input type="file" id="images" multiple>
+
+<br><br>
+
+<button onclick="runTest()">Run Test</button>
+
+<br><br>
+
+<div id="result"></div>
+
+<script>
+
+let model;
+
+async function load(){
+
+model = await mobilenet.load();
+console.log("Model Loaded");
+
+}
+
+load();
+
+async function runTest(){
+
+let files = document.getElementById("images").files;
+
+let resultDiv = document.getElementById("result");
+
+resultDiv.innerHTML="";
+
+for(let i=0;i<files.length && i<5;i++){
+
+let img=document.createElement("img");
+
+img.src=URL.createObjectURL(files[i]);
+img.width=200;
+img.style.margin="10px";
+
+await new Promise(resolve=>img.onload=resolve);
+
+let pred = await model.classify(img);
+
+let container=document.createElement("div");
+
+container.style.display="inline-block";
+container.style.margin="20px";
+container.style.textAlign="center";
+
+let text=document.createElement("p");
+
+text.innerHTML="Prediction: <b>"+pred[0].className+"</b>";
+
+container.appendChild(img);
+container.appendChild(text);
+
+resultDiv.appendChild(container);
+
+}
+
+}
+
+</script>
+
+</body>
+</html>

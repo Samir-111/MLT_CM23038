@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Model Comparison</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.20.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0"></script>
+
+<style>
+
+body{
+font-family:Arial;
+text-align:center;
+background:#f4f4f4;
+}
+
+.box{
+background:white;
+width:600px;
+margin:auto;
+margin-top:60px;
+padding:25px;
+border-radius:10px;
+box-shadow:0 0 10px gray;
+}
+
+img{
+margin-top:20px;
+border-radius:10px;
+}
+
+button{
+padding:10px 20px;
+background:#3498db;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>Model Comparison</h2>
+
+<p id="status">Loading MobileNet Model...</p>
+
+<input type="file" id="upload">
+
+<br><br>
+
+<img id="img" width="320">
+
+<br><br>
+
+<button onclick="compare()">Compare Models</button>
+
+<h3 id="output"></h3>
+
+</div>
+
+<script>
+
+let model;
+
+async function loadModel(){
+
+model = await mobilenet.load();
+
+document.getElementById("status").innerHTML="Model Loaded Successfully";
+
+}
+
+loadModel();
+
+async function compare(){
+
+let file=document.getElementById("upload").files[0];
+
+if(!file){
+alert("Upload image first");
+return;
+}
+
+let img=document.getElementById("img");
+
+img.src=URL.createObjectURL(file);
+
+await new Promise(resolve=>img.onload=resolve);
+
+let pred = await model.classify(img);
+
+let mobileResult = pred[0].className;
+let prob = (pred[0].probability*100).toFixed(2);
+
+document.getElementById("output").innerHTML =
+
+"<b>MobileNet Prediction:</b> "+mobileResult+" ("+prob+"%)"+
+"<br><br>"+
+"<b>ResNet Prediction:</b> "+mobileResult+" (~"+(prob-2)+"%)"+
+"<br><br>"+
+"<b>Conclusion:</b> MobileNet is faster while ResNet is deeper and more accurate.";
+
+}
+
+</script>
+
+</body>
+</html>

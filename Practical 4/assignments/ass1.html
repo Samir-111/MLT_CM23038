@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Top 3 Predictions</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+
+</head>
+
+<body style="text-align:center;font-family:Arial">
+
+<h2>MobileNet Top 3 Predictions</h2>
+
+<input type="file" id="imgUpload">
+
+<br><br>
+
+<img id="img" width="300">
+
+<br><br>
+
+<button onclick="predict()">Predict</button>
+
+<div id="output"></div>
+
+<script>
+
+let model;
+
+async function load(){
+
+model=await mobilenet.load();
+
+}
+
+load();
+
+async function predict(){
+
+let file=document.getElementById("imgUpload").files[0];
+
+let img=document.getElementById("img");
+
+img.src=URL.createObjectURL(file);
+
+await new Promise(resolve=>img.onload=resolve);
+
+let predictions=await model.classify(img);
+
+let text="";
+
+for(let i=0;i<3;i++){
+
+text+=predictions[i].className+" : "+
+(predictions[i].probability*100).toFixed(2)+"%<br>";
+
+}
+
+document.getElementById("output").innerHTML=text;
+
+}
+
+</script>
+
+</body>
+</html>
