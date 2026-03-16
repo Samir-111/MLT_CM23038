@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Train Simple Model</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0"></script>
+
+</head>
+
+<body style="font-family:Arial;text-align:center">
+
+<h2>Model Training in Browser</h2>
+
+<button onclick="train()">Train Model</button>
+
+<p id="result"></p>
+
+<script>
+
+let model;
+
+async function train(){
+
+model=tf.sequential();
+
+model.add(tf.layers.dense({
+units:1,
+inputShape:[1]
+}));
+
+model.compile({
+optimizer:"sgd",
+loss:"meanSquaredError"
+});
+
+const xs=tf.tensor2d([1,2,3,4],[4,1]);
+const ys=tf.tensor2d([2,4,6,8],[4,1]);
+
+await model.fit(xs,ys,{epochs:200});
+
+let prediction=model.predict(tf.tensor2d([5],[1,1]));
+
+document.getElementById("result").innerHTML=
+"Prediction for 5 is: "+prediction.dataSync()[0].toFixed(2);
+
+}
+
+</script>
+
+</body>
+</html>

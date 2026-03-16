@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Fruit Classifier</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
+
+</head>
+
+<body style="font-family:Arial;text-align:center">
+
+<h2>Fruit Classifier using Transfer Learning</h2>
+
+<p id="status">Loading Model...</p>
+
+<input type="file" id="img">
+
+<br><br>
+
+<button onclick="add('Apple')">Add Apple</button>
+<button onclick="add('Banana')">Add Banana</button>
+<button onclick="add('Orange')">Add Orange</button>
+
+<br><br>
+
+<button onclick="predict()">Predict</button>
+
+<h3 id="result"></h3>
+
+<img id="preview" width="250">
+
+<script>
+
+let net;
+let classifier;
+
+async function load(){
+
+net=await mobilenet.load();
+classifier=knnClassifier.create();
+
+document.getElementById("status").innerHTML="Model Loaded";
+
+}
+
+load();
+
+function getImage(){
+
+let file=document.getElementById("img").files[0];
+let img=document.getElementById("preview");
+
+img.src=URL.createObjectURL(file);
+
+return img;
+
+}
+
+async function add(label){
+
+let img=getImage();
+
+await new Promise(r=>img.onload=r);
+
+const activation=net.infer(img,true);
+
+classifier.addExample(activation,label);
+
+alert(label+" added");
+
+}
+
+async function predict(){
+
+let img=getImage();
+
+await new Promise(r=>img.onload=r);
+
+const activation=net.infer(img,true);
+
+const result=await classifier.predictClass(activation);
+
+document.getElementById("result").innerHTML=
+"Prediction: "+result.label;
+
+}
+
+</script>
+
+</body>
+</html>

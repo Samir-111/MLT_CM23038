@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Squat Counter</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet"></script>
+
+<style>
+
+body{
+text-align:center;
+font-family:Arial;
+background:#f4f4f4;
+}
+
+video{display:none}
+
+canvas{
+border-radius:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Squat Counter</h2>
+
+<h3 id="count">Squats: 0</h3>
+
+<video id="video" width="500" height="400" autoplay></video>
+
+<canvas id="canvas" width="500" height="400"></canvas>
+
+<script>
+
+let net;
+let video=document.getElementById("video");
+let canvas=document.getElementById("canvas");
+let ctx=canvas.getContext("2d");
+
+let squatCount=0;
+let stage="up";
+
+async function setupCamera(){
+
+const stream=await navigator.mediaDevices.getUserMedia({video:true});
+video.srcObject=stream;
+
+return new Promise(resolve=>{
+video.onloadedmetadata=()=>resolve(video);
+});
+
+}
+
+async function loadModel(){
+
+net=await posenet.load();
+
+}
+
+function getAngle(a,b,c){
+
+let ab=Math.atan2(a.y-b.y,a.x-b.x);
+let cb=Math.atan2(c.y-b.y,c.x-b.x);
+
+let angle=Math.abs(ab-cb)*180/Math.PI;
+
+if(angle>180){
+angle=360-angle;
+}
+
+return angle;
+
+}
+
+function checkSquat(keypoints){
+
+let hip=keypoints.find(k=>k.part==="leftHip").position;
+let knee=keypoints.find(k=>k.part==="leftKnee").position;
+let ankle=keypoints.find(k=>k.part==="leftAnkle").position;
+
+let angle=getAngle(hip,knee,ankle);
+
+if(angle>160){
+stage="up";
+}
+
+if(angle<100 && stage==="up"){
+stage="down";
+squatCount++;
+
+document.getElementById("count").innerHTML="Squats: "+squatCount;
+}
+
+}
+
+async function detect(){
+
+const pose=await net.estimateSinglePose(video);
+
+ctx.drawImage(video,0,0,500,400);
+
+checkSquat(pose.keypoints);
+
+requestAnimationFrame(detect);
+
+}
+
+async function main(){
+
+await setupCamera();
+await loadModel();
+detect();
+
+}
+
+main();
+
+</script>
+
+</body>
+</html>

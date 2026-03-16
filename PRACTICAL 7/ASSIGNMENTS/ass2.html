@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Load Model</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0"></script>
+
+</head>
+
+<body style="font-family:Arial;text-align:center">
+
+<h2>Load Saved Model</h2>
+
+<button onclick="loadModel()">Load Model</button>
+
+<p id="result"></p>
+
+<script>
+
+async function loadModel(){
+
+const model=await tf.loadLayersModel("localstorage://my-model");
+
+let pred=model.predict(tf.tensor2d([5],[1,1]));
+
+document.getElementById("result").innerHTML=
+"Prediction after loading model: "+pred.dataSync()[0].toFixed(2);
+
+}
+
+</script>
+
+</body>
+</html>
