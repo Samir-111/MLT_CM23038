@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Squat Counter using PoseNet</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet"></script>
+
+<style>
+body{ text-align:center; font-family:Arial; }
+canvas{ border:2px solid black; }
+</style>
+
+</head>
+
+<body>
+
+<h2>Squat Counter</h2>
+<h3>Count: <span id="count">0</span></h3>
+
+<video id="video" width="600" height="500" autoplay></video>
+<canvas id="canvas" width="600" height="500"></canvas>
+
+<script>
+
+let squatCount = 0;
+let stage = "up";   // up or down
+
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+async function setupCamera(){
+
+const stream = await navigator.mediaDevices.getUserMedia({video:true});
+video.srcObject = stream;
+
+}
+
+function calculateAngle(A,B,C){
+
+const AB = Math.sqrt((B.x-A.x)**2+(B.y-A.y)**2);
+const BC = Math.sqrt((B.x-C.x)**2+(B.y-C.y)**2);
+const AC = Math.sqrt((C.x-A.x)**2+(C.y-A.y)**2);
+
+const angle = Math.acos((AB*AB+BC*BC-AC*AC)/(2*AB*BC));
+
+return angle*(180/Math.PI);
+
+}
+
+function countSquat(keypoints){
+
+const hip = keypoints[11].position;
+const knee = keypoints[13].position;
+const ankle = keypoints[15].position;
+
+const angle = calculateAngle(hip,knee,ankle);
+
+// squat going down
+if(angle < 100){
+stage = "down";
+}
+
+// squat completed
+if(angle > 160 && stage === "down"){
+
+stage = "up";
+squatCount++;
+
+document.getElementById("count").innerText = squatCount;
+
+}
+
+}
+
+async function detectPose(){
+
+const net = await posenet.load();
+
+async function poseDetectionFrame(){
+
+const pose = await net.estimateSinglePose(video);
+
+ctx.drawImage(video,0,0,600,500);
+
+countSquat(pose.keypoints);
+
+requestAnimationFrame(poseDetectionFrame);
+
+}
+
+poseDetectionFrame();
+
+}
+
+async function main(){
+
+await setupCamera();
+video.play();
+detectPose();
+
+}
+
+main();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Multi Pose Detection</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet"></script>
+
+<style>
+body{text-align:center;font-family:Arial;}
+canvas{border:2px solid black;}
+</style>
+
+</head>
+
+<body>
+
+<h2>Multi Person Pose Detection</h2>
+
+<video id="video" width="600" height="500" autoplay></video>
+<canvas id="canvas" width="600" height="500"></canvas>
+
+<script>
+
+const video=document.getElementById("video");
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+
+async function setupCamera(){
+
+const stream=await navigator.mediaDevices.getUserMedia({video:true});
+video.srcObject=stream;
+
+}
+
+function drawKeypoints(keypoints){
+
+keypoints.forEach(point=>{
+
+if(point.score>0.5){
+
+ctx.beginPath();
+ctx.arc(point.position.x,point.position.y,5,0,2*Math.PI);
+ctx.fillStyle="red";
+ctx.fill();
+
+}
+
+});
+
+}
+
+async function detectPose(){
+
+const net=await posenet.load();
+
+async function poseFrame(){
+
+const poses=await net.estimateMultiplePoses(video);
+
+ctx.drawImage(video,0,0,600,500);
+
+poses.forEach(pose=>{
+
+drawKeypoints(pose.keypoints);
+
+});
+
+requestAnimationFrame(poseFrame);
+
+}
+
+poseFrame();
+
+}
+
+async function main(){
+
+await setupCamera();
+video.play();
+detectPose();
+
+}
+
+main();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Pose Accuracy Analysis</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet"></script>
+
+</head>
+
+<body>
+
+<h2>Pose Accuracy Analysis</h2>
+
+<video id="video" width="600" height="500" autoplay></video>
+
+<script>
+
+const video=document.getElementById("video");
+
+async function setupCamera(){
+
+const stream=await navigator.mediaDevices.getUserMedia({video:true});
+video.srcObject=stream;
+
+}
+
+async function detectPose(){
+
+const net=await posenet.load();
+
+async function poseFrame(){
+
+const pose=await net.estimateSinglePose(video);
+
+console.log("Single Pose Accuracy:",pose.score);
+
+const poses=await net.estimateMultiplePoses(video);
+
+poses.forEach(p=>{
+
+console.log("Multi Pose Accuracy:",p.score);
+
+});
+
+requestAnimationFrame(poseFrame);
+
+}
+
+poseFrame();
+
+}
+
+async function main(){
+
+await setupCamera();
+video.play();
+detectPose();
+
+}
+
+main();
+
+</script>
+
+</body>
+</html>
