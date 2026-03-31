@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Assignment 2 - Accuracy & Confusion Matrix</title>
+</head>
+<body>
+
+<h2>Validation Test</h2>
+
+<input type="file" multiple onchange="validateImages(event)">
+<h3 id="accuracy"></h3>
+<pre id="matrix"></pre>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
+
+<script>
+let net, classifier;
+let labels = ["apple", "banana", "orange"];
+
+async function init() {
+  net = await mobilenet.load();
+  classifier = knnClassifier.create();
+}
+init();
+
+// Assume already trained (reuse training code before)
+
+let correct = 0, total = 0;
+let matrix = {
+  apple: {apple:0, banana:0, orange:0},
+  banana: {apple:0, banana:0, orange:0},
+  orange: {apple:0, banana:0, orange:0}
+};
+
+async function validateImages(event) {
+  const files = event.target.files;
+
+  for (let file of files) {
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+
+    await new Promise(resolve => {
+      img.onload = async () => {
+        const actual = file.name.split("_")[0]; // naming: apple_1.jpg
+
+        const activation = net.infer(img, true);
+        const result = await classifier.predictClass(activation);
+
+        matrix[actual][result.label]++;
+        if (actual === result.label) correct++;
+        total++;
+
+        resolve();
+      };
+    });
+  }
+
+  const accuracy = (correct / total) * 100;
+
+  document.getElementById("accuracy").innerText =
+    "Accuracy: " + accuracy.toFixed(2) + "%";
+
+  document.getElementById("matrix").innerText =
+    JSON.stringify(matrix, null, 2);
+}
+</script>
+
+</body>
+</html>

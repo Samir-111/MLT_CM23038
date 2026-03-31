@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Assignment 3 - Incremental Learning</title>
+</head>
+<body>
+
+<h2>Add New Categories Anytime</h2>
+
+Label: <input type="text" id="label"><br><br>
+<input type="file" multiple onchange="addCategory(event)">
+<br><br>
+
+<h3>Test Image</h3>
+<input type="file" onchange="predictImage(event)">
+<img id="preview" width="200">
+<h3 id="result"></h3>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
+
+<script>
+let net, classifier;
+
+async function init() {
+  net = await mobilenet.load();
+  classifier = knnClassifier.create();
+  alert("Model Ready!");
+}
+init();
+
+// Add new category anytime
+async function addCategory(event) {
+  const label = document.getElementById("label").value;
+  const files = event.target.files;
+
+  for (let file of files) {
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+
+    img.onload = async () => {
+      const activation = net.infer(img, true);
+      classifier.addExample(activation, label);
+    };
+  }
+
+  alert("Category added: " + label);
+}
+
+// Predict
+async function predictImage(event) {
+  const file = event.target.files[0];
+  const img = document.getElementById("preview");
+
+  img.src = URL.createObjectURL(file);
+
+  img.onload = async () => {
+    const activation = net.infer(img, true);
+    const result = await classifier.predictClass(activation);
+
+    document.getElementById("result").innerText =
+      "Prediction: " + result.label;
+  };
+}
+</script>
+
+</body>
+</html>

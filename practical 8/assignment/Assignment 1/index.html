@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Assignment 1 - Retrain MobileNet</title>
+</head>
+<body>
+
+<h2>Train Model (Apple, Banana, Orange)</h2>
+
+Apple: <input type="file" multiple onchange="loadImages(event, 'apple')"><br><br>
+Banana: <input type="file" multiple onchange="loadImages(event, 'banana')"><br><br>
+Orange: <input type="file" multiple onchange="loadImages(event, 'orange')"><br><br>
+
+<hr>
+
+<h3>Test Image</h3>
+<input type="file" onchange="predictImage(event)">
+<br><br>
+<img id="preview" width="200">
+<h3 id="result"></h3>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
+
+<script>
+let net, classifier;
+
+async function init() {
+  net = await mobilenet.load();
+  classifier = knnClassifier.create();
+  alert("Model Ready!");
+}
+init();
+
+async function loadImages(event, label) {
+  const files = event.target.files;
+  for (let file of files) {
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+
+    img.onload = async () => {
+      const activation = net.infer(img, true);
+      classifier.addExample(activation, label);
+    };
+  }
+}
+
+async function predictImage(event) {
+  if (classifier.getNumClasses() === 0) {
+    alert("Train first!");
+    return;
+  }
+
+  const file = event.target.files[0];
+  const img = document.getElementById("preview");
+  img.src = URL.createObjectURL(file);
+
+  img.onload = async () => {
+    const activation = net.infer(img, true);
+    const result = await classifier.predictClass(activation);
+    const conf = result.confidences[result.label] * 100;
+
+    document.getElementById("result").innerText =
+      `Prediction: ${result.label} (${conf.toFixed(2)}%)`;
+  };
+}
+</script>
+
+</body>
+</html>

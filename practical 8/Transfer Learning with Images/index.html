@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Practical 8 - Image Based Transfer Learning</title>
+</head>
+
+<body>
+
+<h2>Train Model (Apple, Banana, Orange)</h2>
+
+<h3>Upload Training Images</h3>
+
+Apple: <input type="file" multiple onchange="loadImages(event, 'apple')"><br><br>
+Banana: <input type="file" multiple onchange="loadImages(event, 'banana')"><br><br>
+Orange: <input type="file" multiple onchange="loadImages(event, 'orange')"><br><br>
+
+<hr>
+
+<h3>Test Image</h3>
+<input type="file" onchange="predictImage(event)">
+<br><br>
+
+<img id="preview" width="200"><br><br>
+
+<h3 id="result">Prediction: </h3>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
+
+<script>
+let net, classifier;
+
+// Initialize Model
+async function init() {
+  net = await mobilenet.load();
+  classifier = knnClassifier.create();
+  alert("✅ Model Loaded Successfully!");
+}
+init();
+
+// Load Training Images
+async function loadImages(event, label) {
+  const files = event.target.files;
+  let count = 0;
+
+  if (!files.length) return;
+
+  for (let i = 0; i < files.length; i++) {
+    const img = new Image();
+    img.src = URL.createObjectURL(files[i]);
+
+    img.onload = async () => {
+      const activation = net.infer(img, true);
+      classifier.addExample(activation, label);
+      count++;
+
+      if (count === files.length) {
+        alert(`✅ ${label} images added successfully!`);
+      }
+    };
+  }
+}
+
+// Predict Image
+async function predictImage(event) {
+
+  // Check if trained
+  if (classifier.getNumClasses() === 0) {
+    alert("⚠️ Please train the model first!");
+    return;
+  }
+
+  const file = event.target.files[0];
+  const img = document.getElementById('preview');
+
+  img.src = URL.createObjectURL(file);
+
+  img.onload = async () => {
+    const activation = net.infer(img, true);
+    const result = await classifier.predictClass(activation);
+
+    const confidence = result.confidences[result.label] * 100;
+
+    document.getElementById('result').innerText =
+      `Prediction: ${result.label} (${confidence.toFixed(2)}% confident)`;
+  };
+}
+</script>
+
+</body>
+</html>
